@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "lib",
+    "lib": ["ESNext"],
+    "module": "NodeNext",
+    "target": "esnext",
+    "moduleResolution": "NodeNext",
+    "moduleDetection": "force",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "composite": true,
+    "strict": true,
+    "downlevelIteration": true,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowJs": true,
+    "types": [
+      "bun-types" // add Bun global
+    ]
+  },
+  "include": ["src"]
+}
