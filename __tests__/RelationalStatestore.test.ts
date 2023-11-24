@@ -21,9 +21,6 @@ test("RelationalStatestore - should work", async () => {
   class LivesInSameTownRelationship extends Relationship<UserType> {}
   datastore.addEdge(userJohn, userSmith, new IsFriendOfRelationship());
   datastore.addEdge(userJohn, userSmith, new LivesInSameTownRelationship());
-  datastore.subscribe('*', (...args) => {
-
-  })
   const johnsEdges = datastore.edgesFor(userJohn);
   expect(johnsEdges?.length).toEqual(2);
   const johnsFriends = datastore.relationshipsFor(

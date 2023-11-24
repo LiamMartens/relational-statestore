@@ -5,15 +5,15 @@ import { TwoWayMap } from "./TwoWayMap.js";
 import { Operation } from "fast-json-patch";
 
 interface DetachedRelationshipStub<T extends {}> {
-  relationship: Relationship<T, false>;
+  relationship: Relationship<T>;
 }
 
 export type EventTypes<T extends {}> =
   | ["node:added", Node<T>]
-  | ["node:removed", Node<T>, Set<Edge<T, Relationship<T, true>>>]
+  | ["node:removed", Node<T>, Set<Edge<T, Relationship<T>>>]
   | ["node:data:updated", Node<T>]
-  | ["edge:added", Edge<T, Relationship<T, true>>]
-  | ["edge:removed", Edge<T, Relationship<T, true>>];
+  | ["edge:added", Edge<T, Relationship<T>>]
+  | ["edge:removed", Edge<T, Relationship<T>>];
 export type Subscriber<
   T extends {},
   E extends EventTypes<T>[0] = EventTypes<T>[0]
@@ -29,7 +29,7 @@ export class RelationalStatestore<T extends {}> {
   protected nodes = new Map<T, Node<T>>();
   /** maps key to Node object */
   protected keyAssignments = new TwoWayMap<string, T>();
-  protected nodeEdges = new Map<Node<T>, Set<Edge<T, Relationship<T, true>>>>();
+  protected nodeEdges = new Map<Node<T>, Set<Edge<T, Relationship<T>>>>();
 
   /**
    * Internally emits an event and calls the subscribers (sync or async)
@@ -177,7 +177,7 @@ export class RelationalStatestore<T extends {}> {
    * Adds an edge to the graph @TODO support keys?
    * @returns the added edge
    */
-  public addEdge<R extends Relationship<T, boolean>>(
+  public addEdge<R extends Relationship<T>>(
     source: T | Node<T> | string,
     target: T | Node<T> | string,
     relationship: R
@@ -203,13 +203,13 @@ export class RelationalStatestore<T extends {}> {
    * @param edge
    */
   public removeEdge(
-    edgeOrSource: Edge<T, Relationship<T, true>> | T | Node<T> | string,
+    edgeOrSource: Edge<T, Relationship<T>> | T | Node<T> | string,
     target?: T | Node<T> | string,
-    relationship?: Relationship<T, true>
+    relationship?: Relationship<T>
   ) {
     let sourceNode: Node<T> | null = null;
     let targetNode: Node<T> | null = null;
-    let edge: Edge<T, Relationship<T, true>> | null = null;
+    let edge: Edge<T, Relationship<T>> | null = null;
 
     // find source and target nodes depending on incoming arguments
     if (edgeOrSource instanceof Edge) {
@@ -286,7 +286,7 @@ export class RelationalStatestore<T extends {}> {
     if (node) {
       const edges = this.nodeEdges.get(node);
       if (edges) {
-        const matches: Edge<T, Relationship<T, true>>[] = [];
+        const matches: Edge<T, Relationship<T>>[] = [];
         for (const edge of edges) {
           if (edge.relationship instanceof relationshipConstructor) {
             matches.push(edge);
