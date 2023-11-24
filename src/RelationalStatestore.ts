@@ -297,4 +297,23 @@ export class RelationalStatestore<T extends {}> {
     }
     return null;
   };
+
+  /**
+   * Resets the whole store
+   */
+  public reset = () => {
+    // clear subscribers
+    this.subscribers.clear();
+    for (const [, unsubscribe] of this.nodeUnsubscribers) {
+      unsubscribe();
+    }
+    this.nodeUnsubscribers.clear();
+
+    // clear all edges
+    this.nodeEdges.clear();
+    // clear all key assignments
+    this.keyAssignments.clear();
+    // clear all nodes
+    this.nodes.clear();
+  };
 }
