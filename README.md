@@ -1,6 +1,6 @@
 # Relational Statestore
 
-[![npm](https://img.shields.io/npm/v/relational-statestore)](https://www.npmjs.com/package/relational-statestore) [![npm](https://img.shields.io/npm/l/relational-statestore)](https://www.npmjs.com/package/relational-statestore)
+[![npm](https://img.shields.io/npm/v/relational-statestore)](https://www.npmjs.com/package/relational-statestore) [![npm](https://img.shields.io/badge/license-MIT-blue)](https://www.npmjs.com/package/relational-statestore)
 
 This is an in-memory graph like datastore for managing relationships between nodes.
 The purpose of this library is not persistent data storage but rather a relational state which can be useful for certain use cases such as:
