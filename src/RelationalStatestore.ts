@@ -44,7 +44,7 @@ export class RelationalStatestore<T extends {}> {
         if (sub.sync) {
           sub(...args);
         } else {
-          Promise.resolve().then(() => () => sub(...args));
+          Promise.resolve().then(() => sub(...args));
         }
       }
     }
@@ -54,7 +54,7 @@ export class RelationalStatestore<T extends {}> {
         if (sub.sync) {
           sub(...args);
         } else {
-          Promise.resolve().then(() => () => sub(...args));
+          Promise.resolve().then(() => sub(...args));
         }
       }
     }
