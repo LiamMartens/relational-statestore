@@ -1,6 +1,9 @@
 import * as jsonpatch from "fast-json-patch";
 
-type Subscriber<T extends {}> = ((data: T) => void) & {
+type Subscriber<T extends {}> = ((
+  data: T,
+  operation: jsonpatch.Operation[]
+) => void) & {
   sync?: boolean;
 };
 
@@ -9,13 +12,13 @@ export class Node<T extends {}> {
 
   constructor(public data: T) {}
 
-  public patch(operation: readonly jsonpatch.Operation[]) {
+  public patch(operation: jsonpatch.Operation[]) {
     jsonpatch.applyPatch(this.data, operation);
     for (const sub of this.subscribers) {
       if (sub.sync) {
-        sub(this.data);
+        sub(this.data, operation);
       } else {
-        Promise.resolve().then(() => sub(this.data));
+        Promise.resolve().then(() => sub(this.data, operation));
       }
     }
     return this;

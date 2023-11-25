@@ -11,7 +11,7 @@ interface DetachedRelationshipStub<T extends {}> {
 export type EventTypes<T extends {}> =
   | ["node:added", Node<T>]
   | ["node:removed", Node<T>, Set<Edge<T, Relationship<T>>>]
-  | ["node:data:updated", Node<T>]
+  | ["node:data:updated", Node<T>, Operation[]]
   | ["edge:added", Edge<T, Relationship<T>>]
   | ["edge:removed", Edge<T, Relationship<T>>];
 export type Subscriber<
@@ -93,9 +93,8 @@ export class RelationalStatestore<T extends {}> {
       // subscribe to node data changes
       this.nodeUnsubscribers.set(
         nodeObject,
-        nodeObject.subscribe(() => {
-          console.log("updateeeed");
-          this.emit("node:data:updated", nodeObject);
+        nodeObject.subscribe((incoming, operation) => {
+          this.emit("node:data:updated", nodeObject, operation);
         }, false)
       );
       this.emit("node:added", nodeObject);
@@ -166,7 +165,7 @@ export class RelationalStatestore<T extends {}> {
 
   public patchNode = (
     dataNodeOrKey: T | Node<T> | string,
-    operation: readonly Operation[]
+    operation: Operation[]
   ) => {
     const node = this.getNode(dataNodeOrKey);
     if (node) return node.patch(operation);
