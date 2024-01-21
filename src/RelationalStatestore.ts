@@ -261,11 +261,30 @@ export class RelationalStatestore<T extends {}> {
    * @param dataNodeOrKey
    * @returns returns an array of edges or null if node didn't exist
    */
-  public edgesFor = (dataNodeOrKey: T | Node<T> | string) => {
+  public edgesFor = <R extends Relationship<T>>(
+    dataNodeOrKey: T | Node<T> | string,
+    RelationshipType?: {
+      new (): R;
+    }
+  ) => {
     const node = this.getNode(dataNodeOrKey);
     if (node) {
       const edges = this.nodeEdges.get(node);
-      if (edges) return Array.from(edges);
+      if (!edges) return [];
+
+      if (RelationshipType) {
+        const filtered: Edge<T, R>[] = [];
+        for (const edge of edges) {
+          if (edge.relationship instanceof RelationshipType) {
+            filtered.push(edge);
+          }
+        }
+        return filtered;
+      }
+
+      if (edges) {
+        return Array.from(edges);
+      }
     }
     return null;
   };
