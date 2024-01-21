@@ -179,7 +179,13 @@ export class RelationalStatestore<T extends {}> {
   public addEdge<R extends Relationship<T>>(
     source: T | Node<T> | string,
     target: T | Node<T> | string,
-    relationship: R
+    relationship: R,
+    condition?: (
+      store: typeof this,
+      source: Node<T>,
+      target: Node<T>,
+      relationship: R
+    ) => boolean
   ) {
     const sourceNode = this.getNode(source);
     const targetNode = this.getNode(target);
@@ -191,6 +197,22 @@ export class RelationalStatestore<T extends {}> {
         sourceEdges.add(edge);
         targetEdges.add(edge);
         this.emit("edge:added", edge);
+        if (condition) {
+          const unsubscribe = this.subscribe("*", (...args) => {
+            if (args[0] === "edge:removed" && args[1] === edge) {
+              // removal event of own edge -> unsubscribe and do nothing
+              unsubscribe();
+              return;
+            }
+
+            const keep = condition(this, sourceNode, targetNode, relationship);
+            if (keep === false) {
+              // unsubscribe self before removing edge to prevent infinite loop
+              unsubscribe();
+              this.removeEdge(edge);
+            }
+          });
+        }
         return edge;
       }
     }
@@ -201,14 +223,16 @@ export class RelationalStatestore<T extends {}> {
    * Removes a known edge or all
    * @param edge
    */
-  public removeEdge(
+  public removeEdge<R extends Relationship<T>>(
     edgeOrSource: Edge<T, Relationship<T>> | T | Node<T> | string,
     target?: T | Node<T> | string,
-    relationship?: Relationship<T>
+    RelationshipType?: {
+      new (...args: any[]): R;
+    }
   ) {
     let sourceNode: Node<T> | null = null;
     let targetNode: Node<T> | null = null;
-    let edge: Edge<T, Relationship<T>> | null = null;
+    let edges: Edge<T, Relationship<T>>[] = [];
 
     // find source and target nodes depending on incoming arguments
     if (edgeOrSource instanceof Edge) {
@@ -229,31 +253,33 @@ export class RelationalStatestore<T extends {}> {
     const edgesForTarget = this.nodeEdges.get(targetNode);
     // find edge if not an edge instance
     if (edgeOrSource instanceof Edge) {
-      edge = edgeOrSource;
-    } else if (edgesForSrc && relationship) {
+      edges.push(edgeOrSource);
+    } else if (edgesForSrc && RelationshipType) {
       for (const srcEdge of edgesForSrc) {
-        if (srcEdge.relationship === relationship) {
-          edge = srcEdge;
+        if (srcEdge.relationship instanceof RelationshipType) {
+          edges.push(srcEdge);
           break;
         }
       }
     }
 
-    if (!edge) {
+    if (!edges.length) {
       return false;
     }
 
     let edgesRemovedCount = 0;
-    if (edgesForSrc) {
-      edgesRemovedCount += Number(edgesForSrc.delete(edge));
-    }
-    if (edgesForTarget) {
-      edgesRemovedCount += Number(edgesForTarget.delete(edge));
+    for (const edge of edges) {
+      if (edgesForSrc) {
+        edgesRemovedCount += Number(edgesForSrc.delete(edge));
+      }
+      if (edgesForTarget) {
+        edgesRemovedCount += Number(edgesForTarget.delete(edge));
+      }
+      this.emit("edge:removed", edge);
     }
 
-    this.emit("edge:removed", edge);
-    // return true if 2 edges have been removed
-    return edgesRemovedCount === 2;
+    // return true if more than 0 edges have been removed
+    return edgesRemovedCount > 0;
   }
 
   /**
