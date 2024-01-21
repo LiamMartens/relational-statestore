@@ -316,6 +316,30 @@ export class RelationalStatestore<T extends {}> {
   };
 
   /**
+   * Determines whether a node has a relationship with another node
+   */
+  public hasRelationship = <R extends Relationship<T>>(
+    sourceNodeOrKey: T | Node<T> | string,
+    targetNodeOrKey: T | Node<T> | string,
+    RelationshipType: {
+      new (...args: any[]): R;
+    }
+  ) => {
+    const edgesForSource = this.edgesFor(sourceNodeOrKey);
+    if (!edgesForSource) return false;
+    const targetNode = this.getNode(targetNodeOrKey);
+    for (const edge of edgesForSource) {
+      if (
+        edge.relationship instanceof RelationshipType &&
+        edge.target === targetNode
+      ) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  /**
    * Finds all the edges for a node which have a specific type of relationship
    * @param dataNodeOrKey
    * @returns returns an array of edges or null if node didn't exist
