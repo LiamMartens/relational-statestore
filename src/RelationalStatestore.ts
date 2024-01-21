@@ -264,7 +264,7 @@ export class RelationalStatestore<T extends {}> {
   public edgesFor = <R extends Relationship<T>>(
     dataNodeOrKey: T | Node<T> | string,
     RelationshipType?: {
-      new (): R;
+      new (...args: any[]): R;
     }
   ) => {
     const node = this.getNode(dataNodeOrKey);
