@@ -73,3 +73,25 @@ test("RelationalStatestore - edge conditions should work", async () => {
   await Promise.resolve();
   expect(datastore.edgesFor(userJohn)?.length).toEqual(0);
 });
+
+test("RelationalStatestore - can iterate over nodes", async () => {
+  const mock = vi.fn();
+
+  // add some nodes
+  type UserType = { name: string; email: string };
+  const datastore = new RelationalStatestore<UserType>();
+  const userJohn = { name: "John Doe", email: "john.doe@example.com" };
+  const userSmith = { name: "John Smith", email: "john.smith@example.com" };
+  datastore.addNode(userJohn);
+  datastore.addNode(userSmith, "smith");
+  for (const node of datastore.iterate()) {
+    mock(node);
+  }
+  expect(mock).toBeCalledTimes(2);
+
+  // expect to be callled one more time with a condition
+  for (const node of datastore.iterate((node) => node.data === userJohn)) {
+    mock(node);
+  }
+  expect(mock).toBeCalledTimes(3);
+});

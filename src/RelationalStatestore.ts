@@ -316,6 +316,33 @@ export class RelationalStatestore<T extends {}> {
   };
 
   /**
+   * Gets an iterator for all the nodes
+   */
+  public iterate = (condition?: (node: Node<T>) => boolean) => {
+    const internal = this.nodes.entries();
+    const it = {
+      next: (): IteratorResult<Node<T>, null> => {
+        while (true) {
+          const value = internal.next();
+          if (value.done) {
+            return { done: true, value: null };
+          }
+
+          if ((condition && condition(value.value[1])) || !condition) {
+            return {
+              done: false,
+              value: value.value[1],
+            };
+          }
+        }
+      },
+    };
+    return {
+      [Symbol.iterator]: () => it,
+    };
+  };
+
+  /**
    * Determines whether a node has a relationship with another node
    */
   public hasRelationship = <R extends Relationship<T>>(
