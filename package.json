@@ -1,6 +1,6 @@
 {
   "name": "relational-statestore",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "type": "module",
   "types": "./lib/index.d.ts",
   "module": "./lib/index.js",
