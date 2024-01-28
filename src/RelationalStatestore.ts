@@ -20,6 +20,9 @@ export type Subscriber<
 > = ((...args: Extract<EventTypes<T>, [E, ...any[]]>) => void) & {
   sync?: boolean;
 };
+export type RelationshipClassLike<T extends {}, R extends Relationship<T>> = {
+  new (...args: any[]): R;
+};
 
 export class RelationalStatestore<T extends {}> {
   protected subscribers = new Map<"*" | EventTypes<T>[0], Set<Subscriber<T>>>();
@@ -289,9 +292,9 @@ export class RelationalStatestore<T extends {}> {
    */
   public edgesFor = <R extends Relationship<T>>(
     dataNodeOrKey: T | Node<T> | string,
-    RelationshipType?: {
-      new (...args: any[]): R;
-    }
+    RelationshipType?:
+      | RelationshipClassLike<T, R>
+      | [RelationshipClassLike<T, R>, ...RelationshipClassLike<T, R>[]]
   ) => {
     const node = this.getNode(dataNodeOrKey);
     if (node) {
@@ -300,11 +303,24 @@ export class RelationalStatestore<T extends {}> {
 
       if (RelationshipType) {
         const filtered: Edge<T, R>[] = [];
-        for (const edge of edges) {
-          if (edge.relationship instanceof RelationshipType) {
-            filtered.push(edge);
+
+        if (!Array.isArray(RelationshipType)) {
+          for (const edge of edges) {
+            if (edge.relationship instanceof RelationshipType) {
+              filtered.push(edge);
+            }
+          }
+        } else {
+          for (const edge of edges) {
+            inner: for (const Rt of RelationshipType) {
+              if (edge.relationship instanceof Rt) {
+                filtered.push(edge);
+                break inner;
+              }
+            }
           }
         }
+
         return filtered;
       }
 
