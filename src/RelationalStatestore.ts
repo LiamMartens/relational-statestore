@@ -86,7 +86,8 @@ export class RelationalStatestore<T extends {}> {
    * @param key
    * @returns The node itself
    */
-  public addNode = (data: T, key?: string) => {
+  public addNode = (dataOrNode: T | Node<T>, key?: string) => {
+    const data = dataOrNode instanceof Node ? dataOrNode.data : dataOrNode;
     const has = this.nodes.has(data);
     if (!has) {
       const nodeObject = new Node(data);
