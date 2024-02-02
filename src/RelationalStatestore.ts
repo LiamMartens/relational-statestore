@@ -86,8 +86,9 @@ export class RelationalStatestore<T extends {}> {
    * @param key
    * @returns The node itself
    */
-  public addNode = (dataOrNode: T | Node<T>, key?: string) => {
-    const data = dataOrNode instanceof Node ? dataOrNode.data : dataOrNode;
+  public addNode = <V extends T = T>(dataOrNode: V | Node<V>, key?: string) => {
+    // since V extends T we can assume this to also be T
+    const data: T = dataOrNode instanceof Node ? dataOrNode.data : dataOrNode;
     const has = this.nodes.has(data);
     if (!has) {
       const nodeObject = new Node(data);
@@ -112,18 +113,15 @@ export class RelationalStatestore<T extends {}> {
    * @param dataNodeOrKey
    * @returns the node or null
    */
-  public getNode = (dataNodeOrKey: T | Node<T> | string) => {
-    // this is more of a stub
-    if (dataNodeOrKey instanceof Node) {
-      return dataNodeOrKey;
-    }
-
-    // get node if available
-    const dataKey =
+  public getNode = <V extends T = T>(dataNodeOrKey: V | Node<V> | string) => {
+    const data: T | undefined =
       typeof dataNodeOrKey === "string"
         ? this.keyAssignments.get(dataNodeOrKey)
+        : dataNodeOrKey instanceof Node
+        ? dataNodeOrKey.data
         : dataNodeOrKey;
-    return dataKey ? this.nodes.get(dataKey) ?? null : null;
+
+    return data ? this.nodes.get(data) ?? null : null;
   };
 
   /**
@@ -131,7 +129,9 @@ export class RelationalStatestore<T extends {}> {
    * @param dataNodeOrKey
    * @returns whether the node was successfully removed
    */
-  public removeNode = (dataNodeOrKey: T | Node<T> | string) => {
+  public removeNode = <V extends T = T>(
+    dataNodeOrKey: V | Node<V> | string
+  ) => {
     const node = this.getNode(dataNodeOrKey);
     if (node) {
       // get edges for node -> they need to be removed from the related nodes
@@ -167,8 +167,8 @@ export class RelationalStatestore<T extends {}> {
     return false;
   };
 
-  public patchNode = (
-    dataNodeOrKey: T | Node<T> | string,
+  public patchNode = <V extends T = T>(
+    dataNodeOrKey: V | Node<V> | string,
     operation: Operation[]
   ) => {
     const node = this.getNode(dataNodeOrKey);
@@ -180,9 +180,9 @@ export class RelationalStatestore<T extends {}> {
    * Adds an edge to the graph @TODO support keys?
    * @returns the added edge
    */
-  public addEdge<R extends Relationship<T>>(
-    source: T | Node<T> | string,
-    target: T | Node<T> | string,
+  public addEdge<R extends Relationship<T>, VS extends T = T, VT extends T = T>(
+    source: VS | Node<VS> | string,
+    target: VT | Node<VT> | string,
     relationship: R,
     condition?: (
       store: typeof this,
@@ -227,9 +227,9 @@ export class RelationalStatestore<T extends {}> {
    * Removes a known edge or all
    * @param edge
    */
-  public removeEdge<R extends Relationship<T>>(
-    edgeOrSource: Edge<T, Relationship<T>> | T | Node<T> | string,
-    target?: T | Node<T> | string,
+  public removeEdge<R extends Relationship<T>, VS extends T = T, VT extends T = T>(
+    edgeOrSource: Edge<T, Relationship<T>> | VS | Node<VS> | string,
+    target?: VT | Node<VT> | string,
     RelationshipType?: {
       new (...args: any[]): R;
     }
@@ -291,8 +291,8 @@ export class RelationalStatestore<T extends {}> {
    * @param dataNodeOrKey
    * @returns returns an array of edges or null if node didn't exist
    */
-  public edgesFor = <R extends Relationship<T>>(
-    dataNodeOrKey: T | Node<T> | string,
+  public edgesFor = <R extends Relationship<T>, V extends T = T>(
+    dataNodeOrKey: V | Node<V> | string,
     RelationshipType?:
       | RelationshipClassLike<T, R>
       | [RelationshipClassLike<T, R>, ...RelationshipClassLike<T, R>[]]
@@ -362,9 +362,9 @@ export class RelationalStatestore<T extends {}> {
   /**
    * Determines whether a node has a relationship with another node
    */
-  public hasRelationship = <R extends Relationship<T>>(
-    sourceNodeOrKey: T | Node<T> | string,
-    targetNodeOrKey: T | Node<T> | string,
+  public hasRelationship = <R extends Relationship<T>, V extends T = T>(
+    sourceNodeOrKey: V | Node<V> | string,
+    targetNodeOrKey: V | Node<V> | string,
     RelationshipType: {
       new (...args: any[]): R;
     }
@@ -388,8 +388,8 @@ export class RelationalStatestore<T extends {}> {
    * @param dataNodeOrKey
    * @returns returns an array of edges or null if node didn't exist
    */
-  public relationshipsFor = (
-    dataNodeOrKey: T | Node<T> | string,
+  public relationshipsFor = <V extends T = T>(
+    dataNodeOrKey: V | Node<V> | string,
     relationshipConstructor: {
       new (...args: any[]): DetachedRelationshipStub<T>["relationship"];
     }
