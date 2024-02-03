@@ -1,13 +1,13 @@
 import * as jsonpatch from "fast-json-patch";
 
-type Subscriber<T extends {}> = ((
+type Subscriber<T> = ((
   data: T,
   operation: jsonpatch.Operation[]
 ) => void) & {
   sync?: boolean;
 };
 
-export class Node<T extends {}> {
+export class Node<T> {
   protected subscribers = new Set<Subscriber<T>>();
 
   constructor(public data: T) {}

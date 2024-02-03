@@ -1,10 +1,10 @@
 import { Edge } from "./Edge.js";
 
-interface IRelationship<T extends {}, R extends Relationship<T>> {
+interface IRelationship<T, R extends Relationship<T>> {
   edge: Edge<T, R> | null;
 }
 
-export class Relationship<T extends {}>
+export class Relationship<T>
   implements IRelationship<T, Relationship<T>>
 {
   protected $edge: Edge<T, this> | null = null;
